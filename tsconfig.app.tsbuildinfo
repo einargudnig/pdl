@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/bottomnav.tsx","./src/matchhistory.tsx","./src/matchlogger.tsx","./src/pairings.tsx","./src/playeradder.tsx","./src/spinner.tsx","./src/standings.tsx","./src/client.ts","./src/hooks.ts","./src/main.tsx","./src/vite-env.d.ts","./shared/types.ts"],"version":"5.9.3"}

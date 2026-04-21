@@ -1,0 +1,18 @@
+name = "pdl"
+main = "worker/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Serve built SPA from dist/ alongside API routes.
+# After `bun run build`, `wrangler deploy` ships both.
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pdl"
+# Fill in after running `wrangler d1 create pdl`:
+database_id = "REPLACE_WITH_REAL_ID_AFTER_CREATE"
+migrations_dir = "migrations"
