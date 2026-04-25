@@ -1,16 +1,18 @@
 /// <reference types="@cloudflare/workers-types" />
 import { Hono } from 'hono'
+import { basicAuth } from 'hono/basic-auth'
 import { zValidator } from '@hono/zod-validator'
 import {
   CreateMatchRequestSchema,
   CreatePlayerRequestSchema,
-} from '@shared/types'
+} from '../shared/types'
 import { buildStandings } from './scoring'
 import { getMatches, getPlayers, insertMatch, insertPlayer } from './db'
 import { logMiddleware, type Log } from './log'
 
 type Bindings = {
   DB: D1Database
+  PDL_PASSWORD?: string
 }
 
 type Variables = {
@@ -20,6 +22,14 @@ type Variables = {
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
 
 app.use(logMiddleware)
+
+// Gate all API routes behind basic auth when PDL_PASSWORD is set.
+// Unset = open access (so local dev without .dev.vars still works).
+app.use('/api/*', async (c, next) => {
+  const password = c.env.PDL_PASSWORD
+  if (!password) return next()
+  return basicAuth({ username: 'pdl', password })(c, next)
+})
 
 const routes = app
   .get('/api/health', (c) => {

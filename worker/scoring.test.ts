@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Match, Player, Standing } from '@shared/types'
+import type { Match, Player, Standing } from '../shared/types'
 import { MIN_MATCHES_FOR_RATE, buildStandings, sortStandings, streakFor } from './scoring'
 
 const players: Player[] = [

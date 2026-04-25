@@ -1,4 +1,4 @@
-import type { Match, Player, Standing, Streak } from '@shared/types'
+import type { Match, Player, Standing, Streak } from '../shared/types'
 
 export const MIN_STREAK = 3
 

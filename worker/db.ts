@@ -1,5 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
-import type { Match, Player } from '@shared/types'
+import type { Match, Player } from '../shared/types'
 
 type MatchRow = {
   id: string

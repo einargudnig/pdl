@@ -14,5 +14,5 @@ binding = "ASSETS"
 binding = "DB"
 database_name = "pdl"
 # Fill in after running `wrangler d1 create pdl`:
-database_id = "REPLACE_WITH_REAL_ID_AFTER_CREATE"
+database_id = "d0e1ac8a-709e-4863-9044-0e5140379b95"
 migrations_dir = "migrations"
