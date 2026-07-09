@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
     "format": "prettier --write .",
-    "lint": "oxlint"
+    "lint": "oxlint",
+    "check": "oxlint && tsc -b --noEmit && bun run test"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",
@@ -36,7 +37,7 @@
     "@vitest/ui": "^4.1.4",
     "oxlint": "^1.59.0",
     "prettier": "^3.8.2",
-    "typescript": "^5.7.2",
+    "typescript": "^7.0.0",
     "vite": "^6.0.7",
     "vite-plugin-pwa": "^0.21.1",
     "vitest": "^4.1.4",

@@ -10,7 +10,6 @@
     "strict": true,
     "noEmit": true,
     "verbatimModuleSyntax": true,
-    "baseUrl": ".",
     "paths": {
       "@shared/*": ["./shared/*"]
     }
