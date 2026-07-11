@@ -22,6 +22,7 @@ export const createTestEnv = async (): Promise<{
   const migrationsDir = path.resolve(process.cwd(), 'migrations')
   const files = (await readdir(migrationsDir)).filter((f) => f.endsWith('.sql')).sort()
   for (const file of files) {
+    // eslint-disable-next-line no-await-in-loop -- migrations must apply in filename order, not in parallel
     const sql = await readFile(path.join(migrationsDir, file), 'utf8')
     const stripComments = (chunk: string) =>
       chunk
@@ -35,6 +36,7 @@ export const createTestEnv = async (): Promise<{
       .map(stripComments)
       .filter((s) => s.length > 0)
     for (const stmt of statements) {
+      // eslint-disable-next-line no-await-in-loop -- statements within a migration must run in order
       await env.DB.prepare(stmt).run()
     }
   }
