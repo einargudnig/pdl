@@ -77,6 +77,16 @@ const routes = app
     return c.json({ match })
   })
 
+// Asset-first routing sends anything that matches no static file here, so the
+// asset router's own `notFoundHandling` never runs. Hand non-API paths back to
+// ASSETS so `single-page-application` in alchemy.run.ts actually takes effect
+// and deep links boot the app instead of 404ing.
+app.notFound((c) =>
+  c.req.path.startsWith('/api/')
+    ? c.json({ error: 'Not found' }, 404)
+    : c.env.ASSETS.fetch(c.req.raw),
+)
+
 export type AppType = typeof routes
 
 export { app }

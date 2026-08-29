@@ -36,6 +36,30 @@ describe('HTTP: GET /api/players', () => {
   })
 })
 
+describe('HTTP: unknown routes', () => {
+  it('keeps unknown /api paths as a JSON 404 rather than the SPA shell', async () => {
+    const res = await app.request('/api/nope', {}, env)
+    expect(res.status).toBe(404)
+    expect((await res.json()) as unknown).toEqual({ error: 'Not found' })
+  })
+
+  it('hands non-API paths to ASSETS so deep links boot the app', async () => {
+    let asked: string | undefined
+    const withAssets = {
+      ...env,
+      ASSETS: {
+        fetch: (req: Request) => {
+          asked = new URL(req.url).pathname
+          return Promise.resolve(new Response('<!doctype html>', { status: 200 }))
+        },
+      },
+    }
+    const res = await app.request('/some/deep/route', {}, withAssets)
+    expect(res.status).toBe(200)
+    expect(asked).toBe('/some/deep/route')
+  })
+})
+
 describe('HTTP: POST /api/players', () => {
   it('creates a player with a generated id and lists it', async () => {
     const res = await app.request(
