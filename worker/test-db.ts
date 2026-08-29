@@ -24,6 +24,7 @@ export const createTestEnv = async (): Promise<{
   // Migrations are order-dependent — sequential await is the point, not a smell.
   // oxlint-disable no-await-in-loop
   for (const file of files) {
+    // eslint-disable-next-line no-await-in-loop -- migrations must apply in filename order, not in parallel
     const sql = await readFile(path.join(migrationsDir, file), 'utf8')
     const stripComments = (chunk: string) =>
       chunk
@@ -37,6 +38,7 @@ export const createTestEnv = async (): Promise<{
       .map(stripComments)
       .filter((s) => s.length > 0)
     for (const stmt of statements) {
+      // eslint-disable-next-line no-await-in-loop -- statements within a migration must run in order
       await env.DB.prepare(stmt).run()
     }
   }
