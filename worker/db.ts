@@ -24,7 +24,9 @@ export const getPlayers = async (db: D1Database): Promise<Player[]> => {
 
 export const getMatches = async (db: D1Database): Promise<Match[]> => {
   const { results } = await db
-    .prepare('SELECT id, played_at, winner_1, winner_2, loser_1, loser_2 FROM matches ORDER BY played_at DESC')
+    .prepare(
+      'SELECT id, played_at, winner_1, winner_2, loser_1, loser_2 FROM matches ORDER BY played_at DESC',
+    )
     .all<MatchRow>()
   return results.map(toMatch)
 }

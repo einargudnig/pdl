@@ -1,5 +1,5 @@
-import { afterAll, beforeEach, beforeAll, describe, expect, it } from 'vitest'
-import app from './index'
+import { afterAll, beforeEach, beforeAll, describe, expect, it } from 'bun:test'
+import { app } from './index'
 import { createTestEnv } from './test-db'
 
 let env: { DB: D1Database }
@@ -9,9 +9,7 @@ const resetSeeds = async () => {
   await env.DB.batch([
     env.DB.prepare('DELETE FROM matches'),
     env.DB.prepare('DELETE FROM players'),
-    env.DB.prepare(
-      "INSERT INTO players (id, name) VALUES ('a','A'),('b','B'),('c','C'),('d','D')",
-    ),
+    env.DB.prepare("INSERT INTO players (id, name) VALUES ('a','A'),('b','B'),('c','C'),('d','D')"),
   ])
 }
 
@@ -35,6 +33,30 @@ describe('HTTP: GET /api/players', () => {
     expect(res.status).toBe(200)
     const body = (await res.json()) as { players: Array<{ id: string }> }
     expect(body.players.map((p) => p.id).sort()).toEqual(['a', 'b', 'c', 'd'])
+  })
+})
+
+describe('HTTP: unknown routes', () => {
+  it('keeps unknown /api paths as a JSON 404 rather than the SPA shell', async () => {
+    const res = await app.request('/api/nope', {}, env)
+    expect(res.status).toBe(404)
+    expect((await res.json()) as unknown).toEqual({ error: 'Not found' })
+  })
+
+  it('hands non-API paths to ASSETS so deep links boot the app', async () => {
+    let asked: string | undefined
+    const withAssets = {
+      ...env,
+      ASSETS: {
+        fetch: (req: Request) => {
+          asked = new URL(req.url).pathname
+          return Promise.resolve(new Response('<!doctype html>', { status: 200 }))
+        },
+      },
+    }
+    const res = await app.request('/some/deep/route', {}, withAssets)
+    expect(res.status).toBe(200)
+    expect(asked).toBe('/some/deep/route')
   })
 })
 
@@ -141,13 +163,17 @@ describe('HTTP: POST /api/matches → GET /api/standings', () => {
 
     const res = await app.request('/api/standings', {}, env)
     const { standings } = (await res.json()) as {
-      standings: Array<{ player: { id: string }; points: number; wins: number }>
+      standings: Array<{
+        player: { id: string }
+        points: number
+        wins: number
+      }>
     }
 
     const byId = Object.fromEntries(standings.map((s) => [s.player.id, s]))
-    expect(byId.a.points).toBe(1)
-    expect(byId.b.points).toBe(1)
-    expect(byId.c.points).toBe(0)
-    expect(byId.d.points).toBe(0)
+    expect(byId.a!.points).toBe(1)
+    expect(byId.b!.points).toBe(1)
+    expect(byId.c!.points).toBe(0)
+    expect(byId.d!.points).toBe(0)
   })
 })

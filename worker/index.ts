@@ -1,25 +1,17 @@
-/// <reference types="@cloudflare/workers-types" />
 import { Hono } from 'hono'
 import { basicAuth } from 'hono/basic-auth'
 import { zValidator } from '@hono/zod-validator'
-import {
-  CreateMatchRequestSchema,
-  CreatePlayerRequestSchema,
-} from '../shared/types'
+import type { Env } from '../alchemy.run'
+import { CreateMatchRequestSchema, CreatePlayerRequestSchema } from '../shared/types'
 import { buildStandings } from './scoring'
 import { getMatches, getPlayers, insertMatch, insertPlayer } from './db'
 import { logMiddleware, type Log } from './log'
-
-type Bindings = {
-  DB: D1Database
-  PDL_PASSWORD?: string
-}
 
 type Variables = {
   log: Log
 }
 
-const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
+const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 app.use(logMiddleware)
 
@@ -58,8 +50,15 @@ const routes = app
   })
   .post('/api/players', zValidator('json', CreatePlayerRequestSchema), async (c) => {
     const { name } = c.req.valid('json')
-    const player = await insertPlayer(c.env.DB, { id: crypto.randomUUID(), name })
-    c.get('log').set({ event: 'player.created', playerId: player.id, playerName: player.name })
+    const player = await insertPlayer(c.env.DB, {
+      id: crypto.randomUUID(),
+      name,
+    })
+    c.get('log').set({
+      event: 'player.created',
+      playerId: player.id,
+      playerName: player.name,
+    })
     return c.json({ player })
   })
   .post('/api/matches', zValidator('json', CreateMatchRequestSchema), async (c) => {
@@ -78,6 +77,20 @@ const routes = app
     return c.json({ match })
   })
 
+// Asset-first routing sends anything that matches no static file here, so the
+// asset router's own `notFoundHandling` never runs. Hand non-API paths back to
+// ASSETS so `single-page-application` in alchemy.run.ts actually takes effect
+// and deep links boot the app instead of 404ing.
+app.notFound((c) =>
+  c.req.path.startsWith('/api/')
+    ? c.json({ error: 'Not found' }, 404)
+    : c.env.ASSETS.fetch(c.req.raw),
+)
+
 export type AppType = typeof routes
 
-export default app
+export { app }
+
+export default {
+  fetch: app.fetch,
+} satisfies ExportedHandler<Env>

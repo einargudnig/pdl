@@ -1,5 +1,8 @@
 import { Flame, Medal, Snowflake, Trophy } from 'lucide-react'
+import * as stylex from '@stylexjs/stylex'
 import type { Standing, Streak } from '@shared/types'
+import { motion } from './motion.stylex'
+import { colors, font, radius, space } from './tokens.stylex'
 
 type Props = {
   standings: Standing[]
@@ -9,11 +12,28 @@ type Props = {
 const MIN_STREAK = 3
 const SKELETON_ROWS = 4
 
+// Icons take their colour from the wrapping element via `currentColor`, so
+// medal colours stay in tokens.stylex.ts rather than being repeated as hex.
 const rankBadge = (index: number, points: number) => {
   if (points === 0) return null
-  if (index === 0) return <Trophy size={16} color="#ffd24a" aria-label="1st" />
-  if (index === 1) return <Medal size={16} color="#c7c7d1" aria-label="2nd" />
-  if (index === 2) return <Medal size={16} color="#d48a4a" aria-label="3rd" />
+  if (index === 0)
+    return (
+      <span {...stylex.props(styles.gold)}>
+        <Trophy size={16} color="currentColor" aria-label="1st" />
+      </span>
+    )
+  if (index === 1)
+    return (
+      <span {...stylex.props(styles.silver)}>
+        <Medal size={16} color="currentColor" aria-label="2nd" />
+      </span>
+    )
+  if (index === 2)
+    return (
+      <span {...stylex.props(styles.bronze)}>
+        <Medal size={16} color="currentColor" aria-label="3rd" />
+      </span>
+    )
   return null
 }
 
@@ -24,87 +44,122 @@ const StreakBadge = ({ streak }: { streak: Streak | null }) => {
     <span
       aria-label={`${streak.count} ${streak.type} streak`}
       title={`${streak.count} ${streak.type}s in a row`}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.125rem',
-        fontSize: '0.75rem',
-        fontWeight: 600,
-        color: isWin ? '#ff8a4a' : '#6eb5ff',
-        fontVariantNumeric: 'tabular-nums',
-      }}
+      {...stylex.props(styles.streak, isWin ? styles.streakWin : styles.streakLoss)}
     >
       {isWin ? (
-        <Flame size={14} color="#ff8a4a" fill="#ff8a4a" aria-hidden="true" />
+        <Flame size={14} color="currentColor" fill="currentColor" aria-hidden="true" />
       ) : (
-        <Snowflake size={14} color="#6eb5ff" aria-hidden="true" />
+        <Snowflake size={14} color="currentColor" aria-hidden="true" />
       )}
       {streak.count}
     </span>
   )
 }
 
-const rowStyle = {
-  display: 'grid',
-  gridTemplateColumns: '2rem 1fr auto auto',
-  alignItems: 'center',
-  gap: '0.75rem',
-  padding: '0.75rem 1rem',
-  background: 'var(--surface)',
-  border: '1px solid var(--border)',
-  borderRadius: 12,
-  fontVariantNumeric: 'tabular-nums' as const,
-  minHeight: '3rem',
-}
-
 const SkeletonRow = () => (
-  <li style={rowStyle} aria-hidden="true">
-    <span className="pdl-skeleton" style={{ width: '1rem', height: '1rem' }} />
-    <span className="pdl-skeleton" style={{ height: '0.875rem', width: '55%' }} />
-    <span className="pdl-skeleton" style={{ height: '0.75rem', width: '3.5rem' }} />
-    <span className="pdl-skeleton" style={{ height: '1rem', width: '1rem' }} />
+  <li {...stylex.props(styles.row)} aria-hidden="true">
+    <span {...stylex.props(motion.skeleton, styles.skeletonBadge)} />
+    <span {...stylex.props(motion.skeleton, styles.skeletonName)} />
+    <span {...stylex.props(motion.skeleton, styles.skeletonRecord)} />
+    <span {...stylex.props(motion.skeleton, styles.skeletonPoints)} />
   </li>
 )
 
-export const Standings = ({ standings, loaded }: Props) => {
-  return (
-    <section style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      <h2 style={{ margin: 0, fontSize: '1.125rem' }}>Leaderboard</h2>
-      <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '0.25rem' }}>
-        {!loaded
-          ? Array.from({ length: SKELETON_ROWS }).map((_, i) => <SkeletonRow key={i} />)
-          : standings.map((row, i) => {
-              const rate = row.played > 0 ? Math.round((row.wins / row.played) * 100) : 0
-              return (
-                <li
-                  key={row.player.id}
-                  style={{
-                    ...rowStyle,
-                    viewTransitionName: `standing-${row.player.id}`,
-                  }}
-                >
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--muted)',
-                    }}
-                  >
-                    {rankBadge(i, row.points) ?? i + 1}
-                  </span>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {row.player.name}
-                    <StreakBadge streak={row.streak} />
-                  </span>
-                  <span style={{ color: 'var(--muted)', fontSize: '0.875rem' }}>
-                    {row.wins}-{row.losses} · {rate}%
-                  </span>
-                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{row.points}</span>
-                </li>
-              )
-            })}
-      </ol>
-    </section>
-  )
-}
+export const Standings = ({ standings, loaded }: Props) => (
+  <section {...stylex.props(styles.section)}>
+    <h2 {...stylex.props(styles.heading)}>Leaderboard</h2>
+    <ol {...stylex.props(styles.list)}>
+      {!loaded
+        ? // oxlint-disable-next-line react/no-array-index-key
+          Array.from({ length: SKELETON_ROWS }).map((_, i) => <SkeletonRow key={i} />)
+        : standings.map((row, i) => {
+            const rate = row.played > 0 ? Math.round((row.wins / row.played) * 100) : 0
+            return (
+              <li
+                key={row.player.id}
+                {...stylex.props(styles.row)}
+                // Per-row and therefore dynamic: StyleX only compiles static values.
+                style={{ viewTransitionName: `standing-${row.player.id}` }}
+              >
+                <span {...stylex.props(styles.rank)}>{rankBadge(i, row.points) ?? i + 1}</span>
+                <span {...stylex.props(styles.name)}>
+                  {row.player.name}
+                  <StreakBadge streak={row.streak} />
+                </span>
+                <span {...stylex.props(styles.record)}>
+                  {row.wins}-{row.losses} · {rate}%
+                </span>
+                <span {...stylex.props(styles.points)}>{row.points}</span>
+              </li>
+            )
+          })}
+    </ol>
+  </section>
+)
+
+const styles = stylex.create({
+  section: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space.lg,
+  },
+  heading: {
+    margin: 0,
+    fontSize: font.md,
+  },
+  list: {
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
+    display: 'grid',
+    gap: space.sm,
+  },
+  row: {
+    display: 'grid',
+    gridTemplateColumns: '2rem 1fr auto auto',
+    alignItems: 'center',
+    gap: space.lg,
+    padding: `${space.lg} ${space.xl}`,
+    backgroundColor: colors.surface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.md,
+    fontVariantNumeric: 'tabular-nums',
+    minHeight: '3rem',
+  },
+  rank: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: colors.muted,
+  },
+  name: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: space.md,
+  },
+  record: {
+    color: colors.muted,
+    fontSize: font.sm,
+  },
+  points: {
+    color: colors.accent,
+    fontWeight: 600,
+  },
+  streak: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: space.xs,
+    fontSize: font.xs,
+    fontWeight: 600,
+    fontVariantNumeric: 'tabular-nums',
+  },
+  streakWin: { color: colors.win },
+  streakLoss: { color: colors.loss },
+  gold: { color: colors.gold, display: 'inline-flex' },
+  silver: { color: colors.silver, display: 'inline-flex' },
+  bronze: { color: colors.bronze, display: 'inline-flex' },
+  skeletonBadge: { width: '1rem', height: '1rem' },
+  skeletonName: { height: '0.875rem', width: '55%' },
+  skeletonRecord: { height: '0.75rem', width: '3.5rem' },
+  skeletonPoints: { height: '1rem', width: '1rem' },
+})

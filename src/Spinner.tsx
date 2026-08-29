@@ -1,4 +1,6 @@
 import { Loader2 } from 'lucide-react'
+import * as stylex from '@stylexjs/stylex'
+import { motion } from './motion.stylex'
 
 type Props = {
   size?: number
@@ -6,5 +8,5 @@ type Props = {
 }
 
 export const Spinner = ({ size = 18, label = 'Loading' }: Props) => (
-  <Loader2 size={size} className="pdl-spin" aria-label={label} role="status" />
+  <Loader2 size={size} {...stylex.props(motion.spin)} aria-label={label} role="status" />
 )

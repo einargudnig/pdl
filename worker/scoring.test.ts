@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import type { Match, Player, Standing } from '../shared/types'
 import { MIN_MATCHES_FOR_RATE, buildStandings, sortStandings, streakFor } from './scoring'
 
@@ -9,7 +9,11 @@ const players: Player[] = [
   { id: 'd', name: 'D' },
 ]
 
-const match = (winners: [string, string], losers: [string, string], id = crypto.randomUUID()): Match => ({
+const match = (
+  winners: [string, string],
+  losers: [string, string],
+  id = crypto.randomUUID(),
+): Match => ({
   id,
   playedAt: new Date().toISOString(),
   winners,
@@ -45,19 +49,16 @@ describe('buildStandings', () => {
   it('ignores unknown player ids in a match (safe on stale data)', () => {
     const standings = buildStandings(players, [match(['a', 'ghost'], ['c', 'd'])])
     const byId = Object.fromEntries(standings.map((s) => [s.player.id, s]))
-    expect(byId.a.played).toBe(1)
-    expect(byId.a.wins).toBe(1)
+    expect(byId.a!.played).toBe(1)
+    expect(byId.a!.wins).toBe(1)
     expect(standings.some((s) => s.player.id === 'ghost')).toBe(false)
   })
 
   it('sorts results by points descending', () => {
-    const matches = [
-      match(['a', 'b'], ['c', 'd']),
-      match(['a', 'c'], ['b', 'd']),
-    ]
+    const matches = [match(['a', 'b'], ['c', 'd']), match(['a', 'c'], ['b', 'd'])]
     const standings = buildStandings(players, matches)
-    expect(standings[0].player.id).toBe('a')
-    expect(standings[0].points).toBe(2)
+    expect(standings[0]!.player.id).toBe('a')
+    expect(standings[0]!.points).toBe(2)
   })
 })
 
@@ -105,6 +106,7 @@ describe('sortStandings', () => {
       row({ id: 'b', played: 2, wins: 2, points: 2 }),
     ]
     const [first] = sortStandings(rows)
+    if (!first) throw new Error('expected a first row')
     expect(first.player.id).toBe('b')
   })
 
@@ -114,6 +116,7 @@ describe('sortStandings', () => {
       row({ id: 'veteran', played: MIN_MATCHES_FOR_RATE, wins: 3, points: 3 }),
     ]
     const [first] = sortStandings(rows)
+    if (!first) throw new Error('expected a first row')
     expect(first.player.id).toBe('veteran')
   })
 
@@ -123,6 +126,7 @@ describe('sortStandings', () => {
       row({ id: 'grinder', played: 20, wins: 10, points: 10 }),
     ]
     const [first] = sortStandings(rows)
+    if (!first) throw new Error('expected a first row')
     expect(first.player.id).toBe('steady')
     expect(first.wins / first.played).toBe(0.8)
   })
@@ -133,6 +137,7 @@ describe('sortStandings', () => {
       row({ id: 'many', played: 10, wins: 8, points: 8 }),
     ]
     const [first] = sortStandings(rows)
+    if (!first) throw new Error('expected a first row')
     expect(first.player.id).toBe('many')
   })
 

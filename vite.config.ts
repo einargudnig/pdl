@@ -1,33 +1,35 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import devServer from '@hono/vite-dev-server'
-import adapter from '@hono/vite-dev-server/cloudflare'
+import stylex from '@stylexswc/unplugin/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'node:path'
 
-export default defineConfig({
+const rootDir = import.meta.dirname
+
+// The Cloudflare plugin is injected by `Cloudflare.Website.Vite` in
+// alchemy.run.ts — do not add it here. `alchemy dev` runs this config
+// against the real workerd runtime with a local D1.
+export default defineConfig(({ command }) => ({
   resolve: {
     alias: {
-      '@shared': path.resolve(__dirname, './shared'),
-      '@worker': path.resolve(__dirname, './worker'),
+      '@shared': path.resolve(rootDir, './shared'),
+      '@worker': path.resolve(rootDir, './worker'),
     },
   },
   plugins: [
     react(),
-    devServer({
-      entry: 'worker/index.ts',
-      adapter,
-      exclude: [
-        /^\/@.+$/,
-        /.*\.(ts|tsx|jsx|css|svg|png|ico)(\?.*)?$/,
-        /^\/favicon\.ico$/,
-        /^\/(public|assets|static)\/.+/,
-        /^\/node_modules\/.*/,
-        /^\/src\/.+/,
-        /^\/$/,
-        /^\/index\.html$/,
-      ],
-      injectClientScript: false,
+    stylex({
+      rsOptions: {
+        dev: process.env.NODE_ENV !== 'production',
+        unstable_moduleResolution: { type: 'commonJS', rootDir },
+        include: ['src/**/*.{ts,tsx}'],
+      },
+      // Placeholder injection into src/index.css happens at build time only —
+      // in dev the CSS file is processed before any component, so the marker
+      // is filled with nothing and the whole app renders unstyled. Use it for
+      // the build and let the plugin inject its own stylesheet in dev.
+      useCssPlaceholder: command === 'build',
+      useCSSLayers: true,
     }),
     VitePWA({
       registerType: 'autoUpdate',
@@ -66,4 +68,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+}))

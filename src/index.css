@@ -1,13 +1,13 @@
+/* Everything that isn't a component style lives here: the reset, the
+   document chrome, and the view-transition pseudo-elements StyleX can't
+   express. Component styles belong in stylex.create — see AGENTS.md. */
+
+/* StyleX output is injected here (useCssPlaceholder in vite.config.ts). */
+@stylex;
+
 :root {
   color-scheme: dark;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --bg: #0b0b0f;
-  --fg: #f5f5f7;
-  --muted: #8a8a94;
-  --accent: #c3ff4d;
-  --surface: #16161d;
-  --surface-2: #1d1d26;
-  --border: #25252f;
 }
 
 * {
@@ -23,77 +23,11 @@ body,
 }
 
 body {
-  background: var(--bg);
-  color: var(--fg);
+  background: #0b0b0f;
+  color: #f5f5f7;
   -webkit-font-smoothing: antialiased;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
     env(safe-area-inset-left);
-}
-
-button {
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  transition:
-    transform 80ms ease-out,
-    background-color 120ms ease,
-    color 120ms ease,
-    border-color 120ms ease;
-}
-
-button:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-@keyframes pdl-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.pdl-spin {
-  animation: pdl-spin 1s linear infinite;
-}
-
-@keyframes pdl-fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.pdl-fade-up {
-  animation: pdl-fade-up 260ms ease-out both;
-}
-
-.pdl-fade-up-delay-1 {
-  animation-delay: 40ms;
-}
-.pdl-fade-up-delay-2 {
-  animation-delay: 80ms;
-}
-.pdl-fade-up-delay-3 {
-  animation-delay: 120ms;
-}
-
-@keyframes pdl-pulse {
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 0.9;
-  }
-}
-
-.pdl-skeleton {
-  background: var(--surface-2);
-  border-radius: 8px;
-  animation: pdl-pulse 1.4s ease-in-out infinite;
 }
 
 /* View Transitions API — smooth reorder when standings change
@@ -105,19 +39,8 @@ button:active:not(:disabled) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pdl-spin,
-  .pdl-fade-up,
-  .pdl-skeleton {
-    animation: none;
-  }
-  button {
-    transition: none;
-  }
-  button:active:not(:disabled) {
-    transform: none;
-  }
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 0s;
+    animation: none;
   }
 }

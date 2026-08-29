@@ -4,43 +4,48 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "deploy": "bun run build && wrangler deploy",
-    "db:migrate": "wrangler d1 migrations apply pdl --local",
-    "db:migrate:remote": "wrangler d1 migrations apply pdl --remote",
-    "db:console": "wrangler d1 execute pdl --local --command",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "dev": "alchemy dev",
+    "dev:web": "vite",
+    "build": "vite build",
+    "plan": "alchemy plan --stage prod",
+    "deploy": "alchemy deploy --stage prod",
+    "destroy": "alchemy destroy",
+    "test": "bun test",
     "typecheck": "tsc -b --noEmit",
-    "format": "prettier --write .",
     "lint": "oxlint",
-    "check": "oxlint && tsc -b --noEmit && bun run test"
+    "format": "prettier --write .",
+    "check": "prettier --check . && oxlint && tsc -b --noEmit && bun test && vite build"
   },
   "dependencies": {
+    "@base-ui-components/react": "^1.0.0-rc.0",
     "@hono/zod-validator": "^0.7.6",
+    "@stylexjs/stylex": "^0.19.0",
     "evlog": "^2.13.0",
-    "hono": "^4.6.14",
-    "lucide-react": "^1.8.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "zod": "^4.3.6"
+    "hono": "^4.13.5",
+    "lucide-react": "^1.37.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^4.5.2"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250109.0",
-    "@hono/vite-dev-server": "^0.18.0",
+    "@alchemy.run/frontend-frameworks": "2.0.0-beta.74",
+    "@cloudflare/workers-types": "^5.20260829.1",
+    "@effect/platform-bun": "^4.0.0-rc.112",
+    "@stylexswc/unplugin": "^0.18.4",
     "@types/bun": "latest",
-    "@types/react": "^18.3.18",
-    "@types/react-dom": "^18.3.5",
-    "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/ui": "^4.1.4",
-    "oxlint": "^1.59.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "alchemy": "2.0.0-beta.74",
+    "effect": "^4.0.0-rc.112",
+    "miniflare": "^4.20260730.0",
+    "oxlint": "^1.80.0",
     "prettier": "^3.8.2",
-    "typescript": "^7.0.0",
-    "vite": "^6.0.7",
-    "vite-plugin-pwa": "^0.21.1",
-    "vitest": "^4.1.4",
-    "wrangler": "^3.99.0"
-  }
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vite-plugin-pwa": "^1.3.0"
+  },
+  "trustedDependencies": [
+    "@swc/core"
+  ]
 }

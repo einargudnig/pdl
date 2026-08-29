@@ -20,6 +20,8 @@ export const usePlayers = () => {
     setLoaded(true)
   }, [])
   useEffect(() => {
+    // setState runs after an await, so no synchronous cascading render.
+    // oxlint-disable-next-line react/set-state-in-effect
     refresh()
   }, [refresh])
   return { players, loaded, refresh }
@@ -52,6 +54,8 @@ export const useMatches = () => {
     setLoaded(true)
   }, [])
   useEffect(() => {
+    // setState runs after an await, so no synchronous cascading render.
+    // oxlint-disable-next-line react/set-state-in-effect
     refresh()
   }, [refresh])
   return { matches, loaded, refresh }
@@ -77,7 +81,10 @@ export const addPlayer = async (name: string): Promise<Player | { error: string 
     } catch {
       return { error: `Unexpected response (${res.status}). Try reloading.` }
     }
-    if (!res.ok) return { error: errorMessageFrom(body, `Request failed (${res.status})`) }
+    if (!res.ok)
+      return {
+        error: errorMessageFrom(body, `Request failed (${res.status})`),
+      }
     return (body as { player: Player }).player
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Network error.' }
@@ -98,11 +105,17 @@ export const recordMatch = async (
       } catch {
         /* non-json */
       }
-      return { ok: false, error: errorMessageFrom(body, `Request failed (${res.status})`) }
+      return {
+        ok: false,
+        error: errorMessageFrom(body, `Request failed (${res.status})`),
+      }
     }
     return { ok: true }
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'Network error' }
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : 'Network error',
+    }
   }
 }
 
