@@ -21,8 +21,6 @@ export const createTestEnv = async (): Promise<{
 
   const migrationsDir = path.resolve(process.cwd(), 'migrations')
   const files = (await readdir(migrationsDir)).filter((f) => f.endsWith('.sql')).sort()
-  // Migrations are order-dependent — sequential await is the point, not a smell.
-  // oxlint-disable no-await-in-loop
   for (const file of files) {
     // eslint-disable-next-line no-await-in-loop -- migrations must apply in filename order, not in parallel
     const sql = await readFile(path.join(migrationsDir, file), 'utf8')
