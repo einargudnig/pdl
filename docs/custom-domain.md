@@ -33,7 +33,11 @@ Delegate only the `pdl` subdomain to Cloudflare. Everything else on
    **Domains**.
 2. Click the **...** menu next to `einargudni.com` → **Manage DNS Records** (or
    go to <https://vercel.com/dashboard/domains>).
-3. Click **Add** and create two records:
+3. **Delete the existing `pdl` records first.** As of 2026-08-29 `pdl` resolves
+   to Vercel A records (`216.150.16.129`, `216.150.16.1`) — that is what serves
+   the current `DEPLOYMENT_NOT_FOUND` page. A name cannot hold both A and NS
+   records; leaving them there blocks the delegation.
+4. Click **Add** and create two records:
 
    | Type | Name  | Value                     |
    | ---- | ----- | ------------------------- |
@@ -42,7 +46,7 @@ Delegate only the `pdl` subdomain to Cloudflare. Everything else on
 
    (Use the actual nameservers CF gave you — the names above are examples.)
 
-4. Save. Propagation usually finishes in 5–15 minutes.
+5. Save. Propagation usually finishes in 5–15 minutes.
 
 ### 3. Wait for CF to verify delegation
 
