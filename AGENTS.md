@@ -89,6 +89,11 @@ and target their state via data attributes, e.g. `':is([data-active])'`.
   and worker; every other stage gets its own stage-scoped copies, so `alchemy dev`
   cannot write to the crew's real scores. `bun run plan` / `bun run deploy` target
   `prod` explicitly — always read the plan diff before deploying.
+- `PDL_PASSWORD` is **required** for the prod stage — `bun run plan` / `deploy`
+  fail with `ConfigError ... at ["PDL_PASSWORD"]` without it. Put it in `.env`
+  (gitignored). Other stages default it to empty, which the worker reads as
+  "no auth". This is deliberate: a missing secret must never silently ship the
+  crew's app wide open.
 - The first prod deploy after the wrangler → Alchemy migration needs
   `bunx alchemy deploy --stage prod --adopt` to take over the pre-existing `pdl`
   worker into Alchemy's state store. Plain `bun run deploy` after that.

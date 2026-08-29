@@ -20,14 +20,13 @@ export const Database = Cloudflare.D1.Database(
 )
 
 /**
- * SPA and API on a single origin. `runWorkerFirst` keeps `/api/*` off the
- * asset handler; everything else falls through to `index.html`.
+ * SPA and API on a single origin, using the default asset-first routing:
+ * `/api/*` matches no static file so it falls through to the worker, and the
+ * worker hands everything else back to ASSETS. Do not add `runWorkerFirst` —
+ * see AGENTS.md, it breaks `alchemy dev`.
  *
  * `domain` is deliberately unset — Alchemy leaves custom domains it does not
- * manage alone, so the existing `pdl.einargudni.com` attachment survives.
- *
- * An unset PDL_PASSWORD binds an empty string, which the worker reads as
- * "no auth" — that's what keeps `alchemy dev` usable without a secret.
+ * manage alone, so any existing attachment survives.
  */
 export const Web = Cloudflare.Website.Vite(
   'Web',
@@ -37,7 +36,12 @@ export const Web = Cloudflare.Website.Vite(
     compatibility: { flags: ['nodejs_compat'] },
     env: {
       DB: Database,
-      PDL_PASSWORD: Config.redacted('PDL_PASSWORD').pipe(Config.withDefault(Redacted.make(''))),
+      // Required in prod: the worker treats an empty password as "no auth", so
+      // a missing secret would silently ship the crew's app wide open. Other
+      // stages default to empty so `alchemy dev` needs no secret.
+      PDL_PASSWORD: prod
+        ? Config.redacted('PDL_PASSWORD')
+        : Config.redacted('PDL_PASSWORD').pipe(Config.withDefault(Redacted.make(''))),
     },
     assets: {
       notFoundHandling: 'single-page-application',
