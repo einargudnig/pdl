@@ -41,7 +41,6 @@ export const Web = Cloudflare.Website.Vite(
     },
     assets: {
       notFoundHandling: 'single-page-application',
-      runWorkerFirst: ['/api/*'],
     },
   })),
 )

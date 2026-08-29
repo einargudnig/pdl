@@ -9,7 +9,7 @@ const rootDir = import.meta.dirname
 // The Cloudflare plugin is injected by `Cloudflare.Website.Vite` in
 // alchemy.run.ts — do not add it here. `alchemy dev` runs this config
 // against the real workerd runtime with a local D1.
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   resolve: {
     alias: {
       '@shared': path.resolve(rootDir, './shared'),
@@ -24,9 +24,11 @@ export default defineConfig({
         unstable_moduleResolution: { type: 'commonJS', rootDir },
         include: ['src/**/*.{ts,tsx}'],
       },
-      // Emits into the `@stylex;` marker in src/index.css instead of a
-      // virtual module, so StyleX output goes through Vite's CSS pipeline.
-      useCssPlaceholder: true,
+      // Placeholder injection into src/index.css happens at build time only —
+      // in dev the CSS file is processed before any component, so the marker
+      // is filled with nothing and the whole app renders unstyled. Use it for
+      // the build and let the plugin inject its own stylesheet in dev.
+      useCssPlaceholder: command === 'build',
       useCSSLayers: true,
     }),
     VitePWA({
@@ -66,4 +68,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+}))

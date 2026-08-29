@@ -8,8 +8,8 @@ both the React SPA and the `/api/*` routes; data lives in D1.
 |                   |                                                             |
 | ----------------- | ----------------------------------------------------------- |
 | `bun install`     | install (bun 1.4, `trustedDependencies` covers `@swc/core`) |
-| `bun run dev`     | `alchemy dev` — real workerd + local D1 (see Known broken)  |
-| `bun run dev:web` | plain `vite` — UI hot reload, no API                        |
+| `bun run dev`     | `alchemy dev` — real workerd + local D1 on :1337            |
+| `bun run dev:web` | plain `vite` — UI only, no API. Prefer `dev`.               |
 | `bun run check`   | **the gate**: format → lint → typecheck → test → build      |
 | `bun test`        | worker + scoring tests (bun's runner, real Miniflare D1)    |
 | `bun run plan`    | preview prod infra changes without applying                 |
@@ -18,21 +18,6 @@ both the React SPA and the `/api/*` routes; data lives in D1.
 `bun run check` is the whole truth. If it is green, the change is good; if it is
 red, fix it rather than working around it. Never add a lint disable without a
 one-line reason on the preceding line.
-
-## Known broken
-
-`alchemy dev` does not currently start on `alchemy@2.0.0-beta.74`. workerd fails
-to upgrade its WebSocket to Vite's module runner —
-`WebSocket connection to 'ws://127.0.0.1:<port>/__vite_module_runner/init'
-failed: Expected 101 status code` — and the Vite child exits 1. It reproduces
-with a bare `react()`-only Vite config, on Vite 8.1.5 and 8.2.2, under both Bun
-and Node, so it is not this repo's configuration. `vite build`, `alchemy plan`
-and `alchemy deploy` are unaffected.
-
-Until the beta fixes it: use `bun run dev:web` for UI work (the SPA hot-reloads;
-`/api/*` calls 404), and `bun test` to exercise the worker against a real
-Miniflare D1. Retry `bun run dev` after an `alchemy` upgrade — if it starts,
-delete this section.
 
 ## Layout
 
@@ -86,10 +71,20 @@ and target their state via data attributes, e.g. `':is([data-active])'`.
 
 - `noUncheckedIndexedAccess` is on in every tsconfig. Indexing an array or record
   yields `T | undefined` — narrow it, don't cast it away.
-- The SPA and the API share an origin. `runWorkerFirst: ['/api/*']` in
-  `alchemy.run.ts` keeps API paths off the asset handler, and the service worker's
-  `navigateFallbackDenylist` keeps them off the offline fallback. Changing one
-  without the other breaks the API in production only.
+- The SPA and the API share an origin, with the default asset-first routing:
+  `/api/*` matches no static asset so it falls through to the worker. **Do not add
+  `assets.runWorkerFirst`** — scoping it to `['/api/*']` routes everything else,
+  including Vite's `/__vite_module_runner/init` upgrade, through the asset
+  handler, and `alchemy dev` then dies with `Expected 101 status code`. The
+  service worker's `navigateFallbackDenylist` is what keeps `/api/*` off the
+  offline fallback.
+- Deleting `.alchemy/` wipes the local D1 file but not the state store's record
+  of it, so the next `alchemy dev` reports `[Database] noop (local)` and leaves
+  you with an empty database (`no such table: players`). Recover with
+  `bunx alchemy dev --force`.
+- StyleX's `useCssPlaceholder` only fills the `@stylex;` marker in
+  `src/index.css` at build time — `vite.config.ts` enables it for `command ===
+'build'` only. Turning it on for dev renders the whole app unstyled.
 - **Stages matter.** `prod` is the only stage that uses the live `pdl` database
   and worker; every other stage gets its own stage-scoped copies, so `alchemy dev`
   cannot write to the crew's real scores. `bun run plan` / `bun run deploy` target
