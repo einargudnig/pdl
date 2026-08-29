@@ -1,5 +1,5 @@
-import { afterAll, beforeEach, beforeAll, describe, expect, it } from 'vitest'
-import app from './index'
+import { afterAll, beforeEach, beforeAll, describe, expect, it } from 'bun:test'
+import { app } from './index'
 import { createTestEnv } from './test-db'
 
 let env: { DB: D1Database }
@@ -9,9 +9,7 @@ const resetSeeds = async () => {
   await env.DB.batch([
     env.DB.prepare('DELETE FROM matches'),
     env.DB.prepare('DELETE FROM players'),
-    env.DB.prepare(
-      "INSERT INTO players (id, name) VALUES ('a','A'),('b','B'),('c','C'),('d','D')",
-    ),
+    env.DB.prepare("INSERT INTO players (id, name) VALUES ('a','A'),('b','B'),('c','C'),('d','D')"),
   ])
 }
 
@@ -141,13 +139,17 @@ describe('HTTP: POST /api/matches → GET /api/standings', () => {
 
     const res = await app.request('/api/standings', {}, env)
     const { standings } = (await res.json()) as {
-      standings: Array<{ player: { id: string }; points: number; wins: number }>
+      standings: Array<{
+        player: { id: string }
+        points: number
+        wins: number
+      }>
     }
 
     const byId = Object.fromEntries(standings.map((s) => [s.player.id, s]))
-    expect(byId.a.points).toBe(1)
-    expect(byId.b.points).toBe(1)
-    expect(byId.c.points).toBe(0)
-    expect(byId.d.points).toBe(0)
+    expect(byId.a!.points).toBe(1)
+    expect(byId.b!.points).toBe(1)
+    expect(byId.c!.points).toBe(0)
+    expect(byId.d!.points).toBe(0)
   })
 })

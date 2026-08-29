@@ -5,14 +5,15 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "skipLibCheck": true,
-    "types": ["@cloudflare/workers-types"],
+    "types": ["@cloudflare/workers-types", "bun"],
 
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "noEmit": true,
     "verbatimModuleSyntax": true,
     "paths": {
       "@shared/*": ["./shared/*"]
     }
   },
-  "include": ["worker", "shared"]
+  "include": ["worker", "shared", "alchemy.run.ts"]
 }

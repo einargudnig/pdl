@@ -1,6 +1,8 @@
 node_modules
 dist
+.alchemy
 .wrangler
+*.tsbuildinfo
 .dev.vars
 .DS_Store
 *.log
