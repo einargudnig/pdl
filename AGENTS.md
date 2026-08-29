@@ -94,9 +94,10 @@ and target their state via data attributes, e.g. `':is([data-active])'`.
   (gitignored). Other stages default it to empty, which the worker reads as
   "no auth". This is deliberate: a missing secret must never silently ship the
   crew's app wide open.
-- The first prod deploy after the wrangler → Alchemy migration needs
-  `bunx alchemy deploy --stage prod --adopt` to take over the pre-existing `pdl`
-  worker into Alchemy's state store. Plain `bun run deploy` after that.
+- The wrangler → Alchemy takeover is done: the live `pdl` worker and D1 were
+  adopted into Alchemy's state store on 2026-08-29 with a one-time
+  `--adopt` deploy. `bun run deploy` is all you need now. Only reach for
+  `--adopt` again if the state store is lost and prod has to be re-imported.
 - Migrations in `migrations/` are applied by Alchemy on deploy, and replayed from
   disk by `worker/test-db.ts` in tests — so tests always match the real schema.
 - Pre-release dependencies: `alchemy` (2.x beta), `effect` (4.x rc),
