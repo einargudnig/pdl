@@ -42,6 +42,12 @@ const SkeletonCard = () => (
   </li>
 )
 
+// Stable per-slot ids generated once at module load, not derived from array
+// index, so the skeleton loop keeps a real key even if this pattern is later
+// copied to a reorderable list.
+const SKELETON_COUNT = 3
+const skeletonKeys = Array.from({ length: SKELETON_COUNT }, () => crypto.randomUUID())
+
 export const MatchHistory = ({ matches, players, loaded, limit = 10 }: Props) => {
   const byId = Object.fromEntries(players.map((p) => [p.id, p.name]))
   const recent = matches.slice(0, limit)
@@ -57,9 +63,8 @@ export const MatchHistory = ({ matches, players, loaded, limit = 10 }: Props) =>
 
       {!loaded ? (
         <ol {...stylex.props(styles.list)}>
-          {Array.from({ length: 3 }).map((_, i) => (
-            // oxlint-disable-next-line react/no-array-index-key
-            <SkeletonCard key={i} />
+          {skeletonKeys.map((key) => (
+            <SkeletonCard key={key} />
           ))}
         </ol>
       ) : recent.length === 0 ? (

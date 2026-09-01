@@ -11,6 +11,10 @@ type Props = {
 
 const MIN_STREAK = 3
 const SKELETON_ROWS = 4
+// Stable per-slot ids generated once at module load, not derived from array
+// index, so the skeleton loop keeps a real key even if this pattern is later
+// copied to a reorderable list.
+const skeletonKeys = Array.from({ length: SKELETON_ROWS }, () => crypto.randomUUID())
 
 // Icons take their colour from the wrapping element via `currentColor`, so
 // medal colours stay in tokens.stylex.ts rather than being repeated as hex.
@@ -70,8 +74,7 @@ export const Standings = ({ standings, loaded }: Props) => (
     <h2 {...stylex.props(styles.heading)}>Leaderboard</h2>
     <ol {...stylex.props(styles.list)}>
       {!loaded
-        ? // oxlint-disable-next-line react/no-array-index-key
-          Array.from({ length: SKELETON_ROWS }).map((_, i) => <SkeletonRow key={i} />)
+        ? skeletonKeys.map((key) => <SkeletonRow key={key} />)
         : standings.map((row, i) => {
             const rate = row.played > 0 ? Math.round((row.wins / row.played) * 100) : 0
             return (
