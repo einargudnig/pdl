@@ -9,5 +9,13 @@
   "rules": {
     "react/react-in-jsx-scope": "off"
   },
+  "overrides": [
+    {
+      "files": ["src/main.tsx"],
+      "rules": {
+        "import/no-unassigned-import": "off"
+      }
+    }
+  ],
   "ignorePatterns": ["node_modules/", "dist/", "**/*.d.ts"]
 }
